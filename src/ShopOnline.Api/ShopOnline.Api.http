@@ -1,5 +1,173 @@
+@baseUrl = http://localhost:5090
+
+### ===================== CATEGORIES =====================
 
 ###
-GET http://localhost:5090/weatherforecast/
+GET {{baseUrl}}/categories
 Accept: application/json
 
+###
+GET {{baseUrl}}/categories/4
+
+###
+PUT {{baseUrl}}/categories/6
+Content-Type: application/json
+
+{
+    "name": "Boots"
+}
+
+###
+DELETE {{baseUrl}}/categories/6
+
+###
+POST {{baseUrl}}/categories
+Content-Type: application/json
+
+{
+    "name": "Polo"
+}
+
+### ===================== FILTER LOOKUPS =====================
+### What the frontend loads on startup to build filters and translate Ids into names
+
+###
+GET {{baseUrl}}/subcategories
+
+###
+GET {{baseUrl}}/sizes
+
+###
+GET {{baseUrl}}/colors
+
+###
+GET {{baseUrl}}/collections
+
+###
+GET {{baseUrl}}/genders
+
+### ===================== PRODUCTS =====================
+
+### All products (with sizes and stock)
+GET {{baseUrl}}/products
+
+### Single product
+GET {{baseUrl}}/products/1
+
+### Non-existent product -> 404
+GET {{baseUrl}}/products/9999
+
+### ===================== SCENARIO: full product lifecycle =====================
+### Run in order. The Id from POST is stored in the {{productId}} variable (Rider).
+
+### 1. Create: white polo, men's, Summer Collection, sizes M/L/XL
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+    "name": "Summer Pique Polo",
+    "price": 129.99,
+    "subcategoryId": 3,
+    "colorId": 2,
+    "collectionId": 2,
+    "genderId": 2,
+    "sizes": [
+        { "sizeId": 3, "stock": 10 },
+        { "sizeId": 4, "stock": 6 },
+        { "sizeId": 5, "stock": 2 }
+    ]
+}
+
+> {% client.global.set("productId", response.body.id); %}
+
+### 2. View the created product (same URL as the Location header from POST)
+GET {{baseUrl}}/products/{{productId}}
+
+### 3. Restock: price drop + new stock (XL sold out, S added)
+PUT {{baseUrl}}/products/{{productId}}
+Content-Type: application/json
+
+{
+    "name": "Summer Pique Polo",
+    "price": 99.99,
+    "subcategoryId": 3,
+    "colorId": 2,
+    "collectionId": 2,
+    "genderId": 2,
+    "sizes": [
+        { "sizeId": 2, "stock": 8 },
+        { "sizeId": 3, "stock": 4 },
+        { "sizeId": 4, "stock": 1 },
+        { "sizeId": 5, "stock": 0 }
+    ]
+}
+
+### 4. Verify the changes
+GET {{baseUrl}}/products/{{productId}}
+
+### 5. Delete (the product's sizes are deleted with it)
+DELETE {{baseUrl}}/products/{{productId}}
+
+### 6. After deletion -> 404
+GET {{baseUrl}}/products/{{productId}}
+
+### ===================== EDGE CASES =====================
+
+### Product without a collection (collectionId = null) and without sizes
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+    "name": "Plain Black Gloves",
+    "price": 29.99,
+    "subcategoryId": 4,
+    "colorId": 1,
+    "collectionId": null,
+    "genderId": 3,
+    "sizes": []
+}
+
+### New color with a hex code
+POST {{baseUrl}}/colors
+Content-Type: application/json
+
+{
+    "name": "Burgundy",
+    "hexCode": "#800020"
+}
+
+### Update a non-existent record -> 404
+PUT {{baseUrl}}/genders/9999
+Content-Type: application/json
+
+{
+    "name": "Kids"
+}
+
+### Non-existent color (colorId = 9999) -> currently 500 (foreign key error). To be handled with validation later.
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+    "name": "Ghost Product",
+    "price": 10.00,
+    "subcategoryId": 1,
+    "colorId": 9999,
+    "collectionId": null,
+    "genderId": 1,
+    "sizes": []
+}
+
+### Wrong data type (price as text) -> 400
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+    "name": "Broken Product",
+    "price": "cheap",
+    "subcategoryId": 1,
+    "colorId": 1,
+    "collectionId": null,
+    "genderId": 1,
+    "sizes": []
+}

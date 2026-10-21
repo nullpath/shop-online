@@ -2,16 +2,16 @@ using ShopOnline.Application.Entities;
 
 namespace ShopOnline.Infrastructure.Data;
 
-public class SeedData
+internal class SeedData
 {
-    public List<Gender> Genders { get; } =
+    internal List<Gender> Genders { get; } =
     [
         new() { Name = "Women" },
         new() { Name = "Men" },
         new() { Name = "Unisex" }
     ];
 
-    public List<Color> Colors { get; } =
+    internal List<Color> Colors { get; } =
     [
         new() { Name = "Black", HexCode = "#000000" },
         new() { Name = "White", HexCode = "#FFFFFF" },
@@ -21,14 +21,14 @@ public class SeedData
         new() { Name = "Olive", HexCode = "#556B2F" }
     ];
 
-    public List<Collection> Collections { get; } =
+    internal List<Collection> Collections { get; } =
     [
         new() { Name = "Winter Collection" },
         new() { Name = "Summer Collection" },
         new() { Name = "Eden Smith Collection" }
     ];
 
-    public List<Category> Categories { get; } =
+    internal List<Category> Categories { get; } =
     [
         new()
         {
@@ -54,9 +54,9 @@ public class SeedData
         }
     ];
 
-    public List<Product> Products { get; }
+    internal List<Product> Products { get; }
 
-    public SeedData()
+    internal SeedData()
     {
         Products =
         [
@@ -83,7 +83,7 @@ public class SeedData
         ];
     }
 
-    private Product NewProduct(string name, decimal price, string category, string subcategory, string color,
+    Product NewProduct(string name, decimal price, string category, string subcategory, string color,
         string gender, string? collection, params (string Size, int Stock)[] sizes)
     {
         var productCategory = Categories.Single(c => c.Name == category);
