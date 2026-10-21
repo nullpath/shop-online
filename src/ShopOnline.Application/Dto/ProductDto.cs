@@ -1,4 +1,6 @@
-﻿namespace ShopOnline.Application.Dto;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ShopOnline.Application.Dto;
 
 public record ProductDto(
     int Id,
@@ -11,19 +13,19 @@ public record ProductDto(
     List<ProductSizeDto> Sizes);
 
 public record CreateProductDto(
-    string Name,
-    decimal Price,
-    int SubcategoryId,
-    int ColorId,
-    int? CollectionId,
-    int GenderId,
-    List<ProductSizeDto> Sizes);
+    [Required][StringLength(100)] string Name,
+    [Range(typeof(decimal), "0.01", "100000")] decimal Price,
+    [Range(1, int.MaxValue)] int SubcategoryId,
+    [Range(1, int.MaxValue)] int ColorId,
+    [Range(1, int.MaxValue)] int? CollectionId,
+    [Range(1, int.MaxValue)] int GenderId,
+    [Required] List<ProductSizeDto> Sizes);
 
 public record UpdateProductDto(
-    string Name,
-    decimal Price,
-    int SubcategoryId,
-    int ColorId,
-    int? CollectionId,
-    int GenderId,
-    List<ProductSizeDto> Sizes);
+    [Required][StringLength(100)] string Name,
+    [Range(typeof(decimal), "0.01", "100000")] decimal Price,
+    [Range(1, int.MaxValue)] int SubcategoryId,
+    [Range(1, int.MaxValue)] int ColorId,
+    [Range(1, int.MaxValue)] int? CollectionId,
+    [Range(1, int.MaxValue)] int GenderId,
+    [Required] List<ProductSizeDto> Sizes);
