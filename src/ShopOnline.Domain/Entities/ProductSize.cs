@@ -1,4 +1,4 @@
-namespace ShopOnline.Application.Entities;
+namespace ShopOnline.Domain.Entities;
 
 public class ProductSize
 {

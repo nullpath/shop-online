@@ -1,8 +1,6 @@
-using Microsoft.EntityFrameworkCore;
+using ShopOnline.Api.Extensions;
 using ShopOnline.Application.Dto;
-using ShopOnline.Application.Entities;
-using ShopOnline.Application.Mapping;
-using ShopOnline.Infrastructure.Data;
+using ShopOnline.Application.Services;
 
 namespace ShopOnline.Api.Endpoints;
 
@@ -14,79 +12,44 @@ internal static class ProductEndpoints
     {
         var group = app.MapGroup("/products");
 
-        group.MapGet("/{id}", async (int id, ShopDatabaseContext context) =>
+        group.MapGet("/{id}", async (int id, IProductService productService) =>
         {
-            var product = await context.Products
-                .Include(product => product.Sizes)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(product => product.Id == id);
+            var result = await productService.GetProductAsync(id);
 
-            return product is null ? Results.NotFound() : Results.Ok(product.ToDto());
+            return result.Match(
+                product => Results.Ok(product),
+                errors => errors.ToProblem());
         })
         .WithName(GetProductEndpointName);
 
-        group.MapGet("/", async (ShopDatabaseContext context)
-            => await context.Products
-                .Include(product => product.Sizes)
-                .AsNoTracking()
-                .Select(product => product.ToDto())
-                .ToListAsync());
+        group.MapGet("/", async ([AsParameters] ProductFilter filter, IProductService productService)
+            => await productService.GetProductsAsync(filter));
 
-        group.MapDelete("/{id}", async (int id, ShopDatabaseContext context) =>
+        group.MapDelete("/{id}", async (int id, IProductService productService) =>
         {
-            await context.Products
-                .Where(product => product.Id == id)
-                .ExecuteDeleteAsync();
+            var result = await productService.DeleteProductAsync(id);
 
-            return Results.NoContent();
+            return result.Match(
+                _ => Results.NoContent(),
+                errors => errors.ToProblem());
         });
 
-        group.MapPost("/", async (CreateProductDto dto, ShopDatabaseContext context) =>
+        group.MapPost("/", async (CreateProductDto dto, IProductService productService) =>
         {
-            Product product = new()
-            {
-                Name = dto.Name,
-                Price = dto.Price,
-                SubcategoryId = dto.SubcategoryId,
-                ColorId = dto.ColorId,
-                CollectionId = dto.CollectionId,
-                GenderId = dto.GenderId,
-                Sizes = dto.Sizes
-                    .Select(size => new ProductSize { SizeId = size.SizeId, Stock = size.Stock })
-                    .ToList()
-            };
+            var result = await productService.CreateProductAsync(dto);
 
-            context.Products.Add(product);
-            await context.SaveChangesAsync();
-
-            ProductDto productDto = product.ToDto();
-
-            return Results.CreatedAtRoute(GetProductEndpointName, new { id = productDto.Id }, productDto);
+            return result.Match(
+                product => Results.CreatedAtRoute(GetProductEndpointName, new { id = product.Id }, product),
+                errors => errors.ToProblem());
         });
 
-        group.MapPut("/{id}", async (int id, UpdateProductDto dto, ShopDatabaseContext context) =>
+        group.MapPut("/{id}", async (int id, UpdateProductDto dto, IProductService productService) =>
         {
-            var product = await context.Products
-                .Include(product => product.Sizes)
-                .FirstOrDefaultAsync(product => product.Id == id);
+            var result = await productService.UpdateProductAsync(id, dto);
 
-            if (product is null)
-                return Results.NotFound();
-
-            product.Name = dto.Name;
-            product.Price = dto.Price;
-            product.SubcategoryId = dto.SubcategoryId;
-            product.ColorId = dto.ColorId;
-            product.CollectionId = dto.CollectionId;
-            product.GenderId = dto.GenderId;
-
-            product.Sizes.Clear();
-            product.Sizes.AddRange(dto.Sizes
-                .Select(size => new ProductSize { SizeId = size.SizeId, Stock = size.Stock }));
-
-            await context.SaveChangesAsync();
-
-            return Results.NoContent();
+            return result.Match(
+                _ => Results.NoContent(),
+                errors => errors.ToProblem());
         });
     }
 }

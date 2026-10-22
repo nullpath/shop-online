@@ -1,5 +1,5 @@
 using ShopOnline.Application.Dto;
-using ShopOnline.Application.Entities;
+using ShopOnline.Domain.Entities;
 
 namespace ShopOnline.Application.Mapping;
 

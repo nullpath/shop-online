@@ -1,4 +1,4 @@
-using ShopOnline.Application.Entities;
+using ShopOnline.Domain.Entities;
 
 namespace ShopOnline.Infrastructure.Data;
 

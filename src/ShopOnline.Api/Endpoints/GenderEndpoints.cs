@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ShopOnline.Application.Dto;
-using ShopOnline.Application.Entities;
 using ShopOnline.Application.Mapping;
+using ShopOnline.Domain.Entities;
 using ShopOnline.Infrastructure.Data;
 
 namespace ShopOnline.Api.Endpoints;
