@@ -10,7 +10,7 @@ Frontend: React + TypeScript, Vite
 Requires .NET 10 SDK and Node.js 22+.
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/nullpath/shop-online.git
 cd shop-online
 
 # API
